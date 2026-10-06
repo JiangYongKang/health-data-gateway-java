@@ -5,10 +5,12 @@ import com.github.highcumontoa.healthdatagatewayjava.domain.Authorization;
 import com.github.highcumontoa.healthdatagatewayjava.domain.DenyReason;
 import com.github.highcumontoa.healthdatagatewayjava.service.AuditService;
 import com.github.highcumontoa.healthdatagatewayjava.service.AuthorizationService;
+import com.github.highcumontoa.healthdatagatewayjava.service.DelegationChainValidator;
 import com.github.highcumontoa.healthdatagatewayjava.service.GatewayService;
 import com.github.highcumontoa.healthdatagatewayjava.service.PseudonymService;
 import com.github.highcumontoa.healthdatagatewayjava.store.AuditLog;
 import com.github.highcumontoa.healthdatagatewayjava.store.AuthorizationStore;
+import com.github.highcumontoa.healthdatagatewayjava.store.DelegationStore;
 import com.github.highcumontoa.healthdatagatewayjava.store.HealthDataStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,8 @@ class GatewayServiceTest {
         auditLog = new AuditLog();
         auditService = new AuditService(auditLog);
         gatewayService = new GatewayService(
-                new AuthorizationService(authorizationStore),
+                new AuthorizationService(authorizationStore, new DelegationStore(),
+                        new DelegationChainValidator(authorizationStore, new DelegationStore())),
                 auditService, new PseudonymService(), new HealthDataStore());
 
         authorizationStore.save(new Authorization(

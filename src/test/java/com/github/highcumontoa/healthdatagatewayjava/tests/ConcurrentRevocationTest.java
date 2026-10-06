@@ -5,10 +5,12 @@ import com.github.highcumontoa.healthdatagatewayjava.domain.Authorization;
 import com.github.highcumontoa.healthdatagatewayjava.domain.DenyReason;
 import com.github.highcumontoa.healthdatagatewayjava.service.AuditService;
 import com.github.highcumontoa.healthdatagatewayjava.service.AuthorizationService;
+import com.github.highcumontoa.healthdatagatewayjava.service.DelegationChainValidator;
 import com.github.highcumontoa.healthdatagatewayjava.service.GatewayService;
 import com.github.highcumontoa.healthdatagatewayjava.service.PseudonymService;
 import com.github.highcumontoa.healthdatagatewayjava.store.AuditLog;
 import com.github.highcumontoa.healthdatagatewayjava.store.AuthorizationStore;
+import com.github.highcumontoa.healthdatagatewayjava.store.DelegationStore;
 import com.github.highcumontoa.healthdatagatewayjava.store.HealthDataStore;
 import org.junit.jupiter.api.Test;
 
@@ -55,7 +57,8 @@ class ConcurrentRevocationTest {
         AuditLog auditLog = new AuditLog();
 
         // 包装判定服务：第一次判定放行后，先撤回授权，再执行取数前复核
-        AuthorizationService revokingService = new AuthorizationService(store) {
+        AuthorizationService revokingService = new AuthorizationService(store, new DelegationStore(),
+                        new DelegationChainValidator(store, new DelegationStore())) {
             private final AtomicInteger calls = new AtomicInteger();
 
             @Override
@@ -98,7 +101,8 @@ class ConcurrentRevocationTest {
     void concurrentReadsAndRevocation_noDataServedAfterRevocation() throws InterruptedException {
         AuthorizationStore store = newStoreWithValidAuth();
         AuditLog auditLog = new AuditLog();
-        GatewayService gateway = new GatewayService(new AuthorizationService(store),
+        GatewayService gateway = new GatewayService(new AuthorizationService(store, new DelegationStore(),
+                        new DelegationChainValidator(store, new DelegationStore())),
                 new AuditService(auditLog), new PseudonymService(), new HealthDataStore());
 
         int threads = 8;
