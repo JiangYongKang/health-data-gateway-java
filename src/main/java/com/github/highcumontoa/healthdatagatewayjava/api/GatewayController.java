@@ -26,6 +26,7 @@ public class GatewayController {
                                  DenyReason denyReason,
                                  List<String> basis,
                                  String patientPseudonym,
+                                 String delegationId,
                                  Map<String, String> data) {
     }
 
@@ -44,6 +45,7 @@ public class GatewayController {
                 decision.denyReason(),
                 decision.basis(),
                 result.patientPseudonym(),
+                request.delegationId(),
                 result.data());
         return ResponseEntity
                 .status(decision.allowed() ? HttpStatus.OK : HttpStatus.FORBIDDEN)
